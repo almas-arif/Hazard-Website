@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mardox — Environmental Early Warning</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#e8eee7;--panel:#f6f8f4;--ink:#17282a;--mute:#5d6f6d;--line:#c5d1c6;--river:#1c6c8c;--moss:#3b7a4d;--amber:#d99a00;--ember:#d4430c;--map:#dbe6d9;
+--h:'Bricolage Grotesque','Trebuchet MS',sans-serif;--b:'IBM Plex Sans',system-ui,sans-serif;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101a1a;--panel:#182626;--ink:#e6efe8;--mute:#93a8a4;--line:#2c4141;--river:#5bb6d6;--moss:#6cc083;--amber:#f0b429;--ember:#ff7040;--map:#132222}}
+:root[data-theme="dark"]{--bg:#101a1a;--panel:#182626;--ink:#e6efe8;--mute:#93a8a4;--line:#2c4141;--river:#5bb6d6;--moss:#6cc083;--amber:#f0b429;--ember:#ff7040;--map:#132222}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.55 var(--b)}
+h1,h2,h3{font-family:var(--h);margin:0;line-height:1.1}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--river);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:12px 28px;padding:14px clamp(16px,4vw,40px);border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.brand{font:800 22px var(--h);letter-spacing:-.02em}.brand small{font:500 13px var(--b);color:var(--mute);margin-left:8px;letter-spacing:0}
+nav{display:flex;gap:4px;flex:1;flex-wrap:wrap}
+nav button{background:none;border:0;padding:8px 14px;border-radius:8px;font-weight:500;color:var(--mute)}
+nav button[aria-selected=true]{background:var(--ink);color:var(--bg)}
+.net{display:flex;align-items:center;gap:8px;font-size:13px}
+.sw{border:1px solid var(--line);background:var(--bg);padding:6px 12px;border-radius:99px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--moss);display:inline-block}
+.off .dot{background:var(--amber)}
+main{max-width:1240px;margin:0 auto;padding:24px clamp(16px,4vw,40px) 60px}
+section[hidden]{display:none}
+.hero{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;align-items:end;margin-bottom:20px}
+.hero h1{font-size:clamp(28px,4.5vw,46px);max-width:16em;letter-spacing:-.03em;font-weight:800}
+.hero p{margin:8px 0 0;color:var(--mute);max-width:46ch}
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 16px;min-width:110px}
+.stat b{display:block;font:700 26px var(--h)}.stat span{font-size:12.5px;color:var(--mute)}
+.grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.card h2{font-size:19px;margin-bottom:12px}
+#map{width:100%;height:auto;display:block;border-radius:10px;background:var(--map)}
+.node{cursor:pointer}.node circle.c{stroke:var(--panel);stroke-width:3}
+.node text{font:600 11px var(--b);fill:var(--ink);paint-order:stroke;stroke:var(--map);stroke-width:3px}
+.node.sel .ring{stroke:var(--ink);stroke-width:2;fill:none}
+.pulse{animation:p 1.4s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes p{from{opacity:.7;transform:scale(1)}to{opacity:0;transform:scale(3)}}
+@media(prefers-reduced-motion:reduce){.pulse{animation:none}}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--mute);margin-top:10px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.reads{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}
+.r{border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--bg)}
+.r span{font-size:12.5px;color:var(--mute)}.r b{display:block;font:700 20px var(--h)}
+.r.hot{border-color:var(--ember)}.r.hot b{color:var(--ember)}
+.logic{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0 14px;font-size:13px}
+.chip{padding:5px 10px;border-radius:99px;border:1px solid var(--line);background:var(--bg)}
+.chip.on{background:var(--ember);border-color:var(--ember);color:#fff}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--ink);background:none;padding:8px 14px;border-radius:8px;font-weight:500}
+.btn.p{background:var(--ink);color:var(--bg)}
+canvas{width:100%;height:110px;display:block}
+.alert{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.alert:last-child{border:0}
+.sev{width:8px;height:44px;border-radius:4px}
+.alert h3{font-size:16px}.alert p{margin:2px 0 0;color:var(--mute);font-size:13.5px}
+.empty{color:var(--mute);padding:24px 0}
+.pipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.pipe div{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--bg)}
+.pipe h3{font-size:16px;margin-bottom:6px}.pipe p{margin:0;font-size:13.5px;color:var(--mute)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line)}th{color:var(--mute);font-weight:500}
+.tw{overflow-x:auto}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:18px}
+ul.t{margin:0;padding-left:18px}ul.t li{margin:6px 0}
+a{color:var(--river);font-weight:500}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;font-size:14px;max-width:90vw}
+.toast[hidden]{display:none}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Mardox<small>Environmental Early Warning</small></div>
+  <nav role="tablist" aria-label="Sections">
+    <button role="tab" aria-selected="true" data-t="mon">Monitor</button>
+    <button role="tab" aria-selected="false" data-t="alr">Alerts <span id="ac"></span></button>
+    <button role="tab" aria-selected="false" data-t="sys">System</button>
+    <button role="tab" aria-selected="false" data-t="imp">Impact</button>
+  </nav>
+  <div class="net">
+    <button class="sw" id="offb" aria-pressed="false">Cloud link: <span id="cl">online</span></button>
+    <span class="sw" id="netst"><i class="dot"></i> 8 of 8 nodes reporting</span>
+  </div>
+</header>
+<main>
+<section id="mon">
+  <div class="hero">
+    <div><h1>Floods, forest fires and bad air, caught at the node.</h1>
+    <p>Solar-powered sensor nodes read the ground and watch with a camera. An alert fires only when both agree.</p></div>
+    <div class="stats">
+      <div class="stat"><b id="s1">0</b><span>Active alerts</span></div>
+      <div class="stat"><b id="s2">0</b><span>Nodes on watch</span></div>
+      <div class="stat"><b id="s3">0</b><span>Avg air temp °C</span></div>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <h2>Deployment area</h2>
+      <svg id="map" viewBox="0 0 640 420" role="img" aria-label="Map of sensor nodes"></svg>
+      <div class="legend"><span><i style="background:var(--moss)"></i>Normal</span><span><i style="background:var(--amber)"></i>Watch: one signal only</span><span><i style="background:var(--ember)"></i>Alert: signals agree</span></div>
+    </div>
+    <div class="card" id="det" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="alr" hidden>
+  <div class="card"><h2>Alert log</h2><div id="alist"></div></div>
+</section>
+
+<section id="sys" hidden>
+  <div class="card"><h2>How a node decides</h2>
+    <div class="pipe">
+      <div><h3>Read</h3><p>Python polls DHT22, HC-SR04, SW-420 over GPIO, and soil moisture and MQ-2 gas through the ADS1115 over I2C.</p></div>
+      <div><h3>See</h3><p>The USB camera feeds OpenCV, then a quantized YOLOv8n model runs on the Pi CPU at about 5 FPS.</p></div>
+      <div><h3>Agree</h3><p>High heat AND high gas AND smoke seen on camera. If only one is true, the node stays on watch.</p></div>
+      <div><h3>Warn</h3><p>The local buzzer sounds and the event is logged. Only critical alerts and summaries go to the cloud.</p></div>
+    </div>
+  </div>
+  <div class="cols">
+    <div class="card"><h2>Node hardware</h2><div class="tw"><table>
+      <tr><th>Part</th><th>Job</th></tr>
+      <tr><td>Raspberry Pi 4 (8 GB)</td><td>Edge compute</td></tr>
+      <tr><td>DHT22</td><td>Temperature, humidity</td></tr>
+      <tr><td>HC-SR04</td><td>Water level (ultrasonic)</td></tr>
+      <tr><td>SW-420</td><td>Ground vibration</td></tr>
+      <tr><td>Soil moisture + ADS1115</td><td>Saturation, landslide risk</td></tr>
+      <tr><td>MQ-2</td><td>Gas and smoke</td></tr>
+      <tr><td>Solar panel + power bank</td><td>Off-grid power</td></tr></table></div></div>
+    <div class="card"><h2>Rules used in this demo</h2><ul class="t">
+      <li><b>Fire:</b> temp above 45 °C, gas above 400 ppm, camera smoke confidence above 60%.</li>
+      <li><b>Flood:</b> water below 40 cm from sensor and soil above 85%.</li>
+      <li><b>Landslide:</b> soil above 90% and vibration detected.</li>
+      <li>Any single rule met puts the node on watch.</li></ul>
+      <p style="color:var(--mute);font-size:13px">Values on this page are simulated to show the interface. Thresholds are examples to be tuned per site.</p></div>
+  </div>
+</section>
+
+<section id="imp" hidden>
+  <div class="cols" style="margin-top:0">
+    <div class="card"><h2>What changes on the ground</h2><ul class="t">
+      <li>Floods, landslides and wildfires are seen in their early stages.</li>
+      <li>Local warnings skip the round trip to a distant server.</li>
+      <li>Cross-checking sensors with vision lowers false alarms.</li>
+      <li>Core monitoring keeps running without internet.</li>
+      <li>Solar nodes cover terrain that is hard to reach.</li></ul></div>
+    <div class="card"><h2>Who uses it</h2><ul class="t">
+      <li>State disaster management authorities and forest departments</li>
+      <li>Municipalities and industries</li>
+      <li>Vulnerable communities, through prioritized warnings</li></ul>
+      <p style="color:var(--mute)">Revenue: node deployment, installation, annual maintenance, and monitoring or analytics services. Start from one pilot site, then grow to district and state networks.</p></div>
+    <div class="card"><h2>References</h2><ul class="t">
+      <li><a href="https://www.undrr.org" target="_blank" rel="noopener">UNDRR</a>: Global Status of Multi-Hazard Early Warning Systems 2024</li>
+      <li><a href="https://www.cimafoundation.org" target="_blank" rel="noopener">UNDRR &amp; CIMA Foundation</a>: MHEWS Risk Knowledge Handbook 2024</li>
+      <li><a href="https://wmo.int" target="_blank" rel="noopener">WMO</a>: Weather Forecasts and Early Warnings</li>
+      <li>Tiggeloven et al., “The Role of Artificial Intelligence for Early Warning Systems,” iScience, 2025</li></ul></div>
+  </div>
+  <p style="color:var(--mute);margin-top:24px">Smart India Hackathon 2026 · Problem Statement SIH26178 · Team Mardox (ID 121688)</p>
+</section>
+</main>
+<div class="toast" id="toast" hidden></div>
+<script>
+const $=s=>document.querySelector(s),rnd=(a,b)=>a+Math.random()*(b-a);
+const N=[["Kali river bank",95,300,"flood"],["North ridge",210,90,"fire"],["Teak forest",330,170,"fire"],["Bridge 4",250,330,"flood"],["Hill road",470,80,"land"],["Village edge",520,250,"air"],["Sal woodland",390,330,"fire"],["Industrial belt",580,360,"air"]]
+.map((n,i)=>({id:i,name:n[0],x:n[1],y:n[2],kind:n[3],temp:rnd(27,32),hum:rnd(50,70),water:rnd(120,160),soil:rnd(35,55),gas:rnd(80,140),vib:0,cv:rnd(0,.12),hist:[]}));
+let sel=0,alerts=[],offline=false,seen={};
+function status(n){const f=[n.temp>45,n.gas>400,n.cv>.6],fl=[n.water<40,n.soil>85],ls=[n.soil>90,n.vib>0];
+ if(f.every(Boolean))return["alert","Forest fire"];if(fl.every(Boolean))return["alert","Flood"];if(ls.every(Boolean))return["alert","Landslide"];
+ if(f.some(Boolean)||fl.some(Boolean)||ls.some(Boolean))return["watch",""];return["ok",""]}
+const col={ok:"var(--moss)",watch:"var(--amber)",alert:"var(--ember)"};
+function contours(){let s="";for(let k=1;k<=7;k++){let r=k*38,p="";for(let a=0;a<=24;a++){const t=a/24*6.283,w=r*(1+.16*Math.sin(t*3+k)+.08*Math.cos(t*5));p+=(a?"L":"M")+(330+w*1.5*Math.cos(t)).toFixed(0)+" "+(200+w*Math.sin(t)).toFixed(0)}s+=`<path d="${p}Z" fill="none" stroke="var(--line)" stroke-width="1.2"/>`}
+ return s+`<path d="M0 330 C140 280 180 380 300 340 S520 300 640 360" fill="none" stroke="var(--river)" stroke-width="7" opacity=".55" stroke-linecap="round"/>`}
+function drawMap(){let h=contours();N.forEach(n=>{const[s]=status(n);
+ h+=`<g class="node ${n.id==sel?"sel":""}" data-i="${n.id}" tabindex="0" role="button" aria-label="${n.name}, ${s}">${s=="alert"?`<circle class="pulse" cx="${n.x}" cy="${n.y}" r="10" fill="${col[s]}"/>`:""}<circle class="c" cx="${n.x}" cy="${n.y}" r="10" fill="${col[s]}"/><circle class="ring" cx="${n.x}" cy="${n.y}" r="17"/><text x="${n.x}" y="${n.y-22}" text-anchor="middle">${n.name}</text></g>`});
+ $("#map").innerHTML=h;$("#map").querySelectorAll(".node").forEach(g=>{g.onclick=()=>{sel=+g.dataset.i;render()};g.onkeydown=e=>{if(e.key=="Enter"||e.key==" "){e.preventDefault();sel=+g.dataset.i;render()}}})}
+function detail(){const n=N[sel],[s,t]=status(n),hot=(c)=>c?"hot":"";
+ $("#det").innerHTML=`<h2>${n.name}</h2><div style="color:var(--mute);font-size:13.5px">${s=="alert"?"Alert: "+t:s=="watch"?"On watch: one signal only":"All readings normal"}</div>
+ <div class="reads"><div class="r ${hot(n.temp>45)}"><span>Air temperature</span><b>${n.temp.toFixed(1)} °C</b></div><div class="r"><span>Humidity</span><b>${n.hum.toFixed(0)}%</b></div>
+ <div class="r ${hot(n.water<40)}"><span>Water, distance to sensor</span><b>${n.water.toFixed(0)} cm</b></div><div class="r ${hot(n.soil>85)}"><span>Soil moisture</span><b>${n.soil.toFixed(0)}%</b></div>
+ <div class="r ${hot(n.gas>400)}"><span>Gas / smoke</span><b>${n.gas.toFixed(0)} ppm</b></div><div class="r ${hot(n.vib>0)}"><span>Vibration</span><b>${n.vib?"Detected":"None"}</b></div></div>
+ <div class="logic"><span class="chip ${n.temp>45&&n.gas>400?"on":""}">Heat + gas</span><b>AND</b><span class="chip ${n.cv>.6?"on":""}">Camera sees smoke ${(n.cv*100).toFixed(0)}%</span><b>=</b><span class="chip ${s=="alert"?"on":""}">${s=="alert"?"Buzzer on":"No alert"}</span></div>
+ <canvas id="cv" aria-label="Water distance trend"></canvas>
+ <div class="btns" style="margin-top:12px"><button class="btn p" id="bf">Simulate fire</button><button class="btn p" id="bw">Simulate flood</button><button class="btn p" id="bl">Simulate landslide</button><button class="btn" id="br">Reset node</button></div>`;
+ $("#bf").onclick=()=>{Object.assign(n,{temp:53,gas:520,cv:.82});toast("Fire conditions set on "+n.name)};
+ $("#bw").onclick=()=>{Object.assign(n,{water:28,soil:92});toast("Flood conditions set on "+n.name)};
+ $("#bl").onclick=()=>{Object.assign(n,{soil:95,vib:1});toast("Landslide conditions set on "+n.name)};
+ $("#br").onclick=()=>{Object.assign(n,{temp:29,gas:100,cv:.05,water:140,soil:45,vib:0});toast(n.name+" reset")};
+ spark()}
+function spark(){const c=$("#cv");if(!c)return;const d=window.devicePixelRatio||1,w=c.clientWidth,h=110;c.width=w*d;c.height=h*d;const x=c.getContext("2d");x.scale(d,d);
+ const H=N[sel].hist;if(H.length<2)return;const st=getComputedStyle(document.documentElement);x.strokeStyle=st.getPropertyValue("--river");x.lineWidth=2.5;x.beginPath();
+ H.forEach((v,i)=>{const px=i/(30-1)*w,py=h-8-(v/200)*(h-16);i?x.lineTo(px,py):x.moveTo(px,py)});x.stroke();
+ x.fillStyle=st.getPropertyValue("--mute");x.font="12px sans-serif";x.fillText("Water distance, last minute (lower means rising)",0,12)}
+function alertList(){const el=$("#alist");el.innerHTML=alerts.length?alerts.map((a,i)=>`<div class="alert"><div class="sev" style="background:${a.ack?"var(--line)":"var(--ember)"}"></div><div><h3>${a.type} at ${a.node}</h3><p>${a.time} · ${a.why} · ${a.sent}</p></div><button class="btn" data-i="${i}" ${a.ack?"disabled":""}>${a.ack?"Acknowledged":"Acknowledge"}</button></div>`).join(""):`<div class="empty">No alerts yet. Open Monitor and simulate an event on a node.</div>`;
+ el.querySelectorAll("button").forEach(b=>b.onclick=()=>{alerts[+b.dataset.i].ack=1;render()})}
+function render(){drawMap();detail();alertList();const act=alerts.filter(a=>!a.ack).length;$("#s1").textContent=act;$("#s2").textContent=N.filter(n=>status(n)[0]=="watch").length;$("#s3").textContent=(N.reduce((a,n)=>a+n.temp,0)/N.length).toFixed(1);$("#ac").textContent=act?"("+act+")":""}
+function tick(){N.forEach(n=>{const[s]=status(n);if(s=="ok"){n.temp+=rnd(-.4,.4);n.temp=Math.min(34,Math.max(25,n.temp));n.water+=rnd(-3,3);n.soil+=rnd(-.8,.8);n.gas+=rnd(-8,8);n.cv=Math.max(0,Math.min(.15,n.cv+rnd(-.02,.02)))}
+ n.hum+=rnd(-1,1);n.hist.push(n.water);if(n.hist.length>30)n.hist.shift();
+ const[st,ty]=status(n),key=n.id+ty;if(st=="alert"&&!seen[key]){seen[key]=1;alerts.unshift({type:ty,node:n.name,time:new Date().toLocaleTimeString(),why:ty=="Forest fire"?"heat, gas and camera smoke agree":ty=="Flood"?"water level and soil saturation agree":"soil saturation and vibration agree",sent:offline?"buzzer sounded, queued for upload":"buzzer sounded, sent to authorities",ack:0});toast(ty+" alert at "+n.name)}
+ if(st!="alert")Object.keys(seen).forEach(k=>{if(k.startsWith(n.id))delete seen[k]})});render()}
+let tt;function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600)}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.setAttribute("aria-selected",x==b));["mon","alr","sys","imp"].forEach(id=>$("#"+id).hidden=id!=b.dataset.t);if(b.dataset.t=="mon")spark()});
+$("#offb").onclick=e=>{offline=!offline;e.currentTarget.setAttribute("aria-pressed",offline);$("#cl").textContent=offline?"offline":"online";$("#netst").classList.toggle("off",offline);$("#netst").innerHTML=offline?'<i class="dot"></i> Edge mode: nodes alert locally':'<i class="dot"></i> 8 of 8 nodes reporting';toast(offline?"Internet lost. Nodes keep monitoring and sounding alerts.":"Back online. Queued alerts uploaded.")};
+for(let i=0;i<30;i++)N.forEach(n=>n.hist.push(n.water+rnd(-3,3)));
+render();setInterval(tick,2000);addEventListener("resize",spark);
+</script>
+</body>
+</html>
